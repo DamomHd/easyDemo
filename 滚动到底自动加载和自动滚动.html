@@ -1,0 +1,345 @@
+<!--
+ * @Descripttion: Vincent
+ * @version: v1.0
+ * @Author: hongda_huang
+ * @Date: 2019-08-11 20:42:47
+ * @LastEditors: vincent_Huanghd@126.com
+ * @LastEditTime: 2019-08-11 22:16:00
+ * @description: 
+ -->
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .tableWrap {
+            /* width: 600px; */
+            box-sizing: border-box;
+        }
+
+        .table-thead {
+            width: auto;
+            font-size: 14px;
+            background-color: #FFF;
+            border: 1px solid #CFCFCF;
+            border-collapse: collapse;
+            border-spacing: 0px;
+        }
+
+        .table-thead tr th {
+            text-align: left;
+            padding-left: 10px;
+            /* border-right: 1px solid #CFCFCF; */
+        }
+
+        .table-thead tr th:last-child,
+        .table-thead tr th:nth-last-child(2) {
+            /* border-right: 0; */
+        }
+
+        .table-thead tr,
+        .table-tbody tr {
+            height: 35px;
+        }
+
+        .table-tbody {
+            width: auto;
+            font-size: 14px;
+            background-color: #FFF;
+            border-left: 1px solid #CFCFCF;
+            border-collapse: collapse;
+            border-spacing: 0px;
+        }
+
+        .table-tbody tr {
+            border-bottom: 1px solid #CFCFCF;
+        }
+
+        .table-tbody tr td {
+            padding-left: 10px;
+            padding-right: 10px;
+            border-right: 1px solid #CFCFCF;
+        }
+
+        .comTbody {
+            width: auto;
+            display: inline-block;
+            max-height: 300px;
+            overflow-y: auto;
+            border-bottom: 1px solid #CFCFCF;
+        }
+
+        .comTbody::-webkit-scrollbar {
+            display: none;
+        }
+
+        .percent {
+            width: 120px;
+            height: 30px;
+            margin: 5px 0;
+            background-color: transparent;
+        }
+
+        .percent div {
+            height: 100%;
+            background-color: #06B124;
+            color: #fff;
+            text-align: center;
+            line-height: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tableWrap" style="margin:20px;">
+
+        <table class="table-thead">
+            <colgroup>
+                <col width="100">
+                <col width="200">
+                <col width="150">
+                <col width="150">
+                <col width="150">
+                <col width="150">
+                <col width="150">
+                <col width="150">
+                <!-- <col width="17"> -->
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>生产规格</th>
+                    <th>计划数</th>
+                    <th>已完成数</th>
+                    <th>计划完成时间</th>
+                    <th>完成率</th>
+                    <th>生产设备</th>
+                    <th>备注</th>
+                </tr>
+            </thead>
+        </table>
+
+        <div class="comTbody">
+            <table class="table-tbody" style="border-top: 0;">
+                <colgroup>
+                    <col width="100">
+                    <col width="200">
+                    <col width="150">
+                    <col width="150">
+                    <col width="150">
+                    <col width="150">
+                    <col width="150">
+                    <col width="150">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>
+                            <div class="percent">
+                                <div style="width: 80%">80%</div>
+                            </div>
+                        </td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>测试测试</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                        <td>12312312313132</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <div class="currenPage">0</div>
+
+    <script>
+        const URL = ''//接口地址
+        let page = 1;
+        let data = new Array(10).fill({
+            id: '1',
+            sku: '测试',
+            planNum: 123,
+            alreayNum: 90,
+            playTime: '2019-01-02',
+            percent: '20',
+            equipment: '机器',
+            remark: '测试备注'
+        })
+        $('.comTbody').on('scroll', function () {
+            var scrollTop = $(this).scrollTop();
+            var scrollHeight = $('.comTbody')[0].scrollHeight;
+            var windowHeight = $(this).height();
+            if (scrollTop + windowHeight == scrollHeight) {
+                // alert('下拉到底了');
+                $('.currenPage').text(`当前为${page}页数据`)
+                page++;
+
+                loadData();
+            }
+        })
+        function loadData() {
+            createTr(data)
+            // $.ajax({
+            //     url: '',
+            //     type: 'get',
+            //     data: {
+
+            //     },
+            //     success: function (res) {
+            //         //判断请求状态
+            //         let info = res.data;
+            //         createTr(info)
+            //     },
+            //     error: function (error) {
+
+            //     }
+            // })
+        }
+        function createTr(info) {
+            var html = ''
+            for (let i = 0; i < info.length; i++) {
+                let item = info[i]
+                html += "<tr>" +
+                    "<td>" + item.id + "</td>" + "<td>" + item.sku + "</td>" + "<td>" + item.planNum + "</td>" + "<td>" + item.alreayNum + "</td>" +
+                    "<td>" + item.playTime + "</td>" + "<td><div class='percent'><div style='width:" + item.percent + "%'>" + item.percent + "%</div></div></td>" + "<td>" + item.equipment + "</td>" + "<td>" + item.remark + "</td>" +
+                    +"</tr>"
+            }
+
+            $('.comTbody tbody').append($(html));
+        }
+
+        function startmarquee(lh, speed, delay) {
+            var t;
+            var oHeight = 300;/** div的高度 **/
+            var p = false;
+            var o = document.querySelector(".comTbody");
+            var preTop = 0;
+            o.scrollTop = 0;
+            function start() {
+                t = setInterval(scrolling, speed);
+                o.scrollTop += 1;
+            }
+            function scrolling() {
+                if (o.scrollTop % lh != 0
+                    && o.scrollTop % (o.scrollHeight - oHeight - 1) != 0) {
+                    preTop = o.scrollTop;
+                    o.scrollTop += 1;
+                    if (preTop >= o.scrollHeight || preTop == o.scrollTop) {
+                        o.scrollTop = 0;
+                    }
+                } else {
+                    clearInterval(t);
+                    setTimeout(start, delay);
+                }
+            }
+            setTimeout(start, delay);
+        }
+        window.onload = function () {
+            /**startmarquee(一次滚动高度,速度,停留时间);**/
+            startmarquee(1000, 20, 1500);
+        }
+    </script>
+</body>
+
+</html>

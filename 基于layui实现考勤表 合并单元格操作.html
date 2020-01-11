@@ -1,0 +1,1095 @@
+<!--
+ * @Descripttion: Vincent
+ * @version: v1.0
+ * @Author: hongda_huang
+ * @Date: 2020-01-11 09:51:37
+ * @LastEditors  : vincent_Huanghd@126.com
+ * @LastEditTime : 2020-01-11 16:49:55
+ * @description: 
+ -->
+<!DOCTYPE html>
+
+<html lang='en'>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>Document</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <style>
+        .layui-table-cell {
+            /* display: table-cell;
+            vertical-align: middle; */
+            height: auto;
+            overflow: visible;
+            /* text-overflow: inherit;
+            white-space: normal; */
+        }
+
+        .day-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-morning,
+        .day-afternoon {
+            flex: 1;
+            width: 100%;
+        }
+
+        .day-afternoon {
+            border-top: 1px solid #ddd;
+        }
+
+        /*滚动条的宽度*/
+
+        ::-webkit-scrollbar {
+            width: 9px;
+            height: 9px;
+        }
+
+        /*外层轨道。可以用display:none让其不显示，也可以添加背景图片，颜色改变显示效果*/
+
+        ::-webkit-scrollbar-track {
+            width: 6px;
+            background-color: #0d1b20;
+            -webkit-border-radius: 2em;
+            -moz-border-radius: 2em;
+            border-radius: 2em;
+        }
+
+        /*滚动条的设置*/
+        ::-webkit-scrollbar-thumb {
+            background-color: #606d71;
+            background-clip: padding-box;
+            min-height: 28px;
+            -webkit-border-radius: 2em;
+            -moz-border-radius: 2em;
+            border-radius: 2em;
+        }
+
+        /*滚动条移上去的背景*/
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #A55E25;
+        }
+
+
+        #modalDay {
+            display: none;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <table id="demo" lay-filter="demo"></table>
+
+
+
+        <div id="modalDay">
+            <form class="layui-form layui-form-pane" action="" lay-filter="editDayForm">
+                <div class="layui-form-item" pane="">
+                    <label class="layui-form-label">上午</label>
+                    <div class="layui-input-block" id="dayMorning">
+                        <input type="radio" name="morning" value="normal" title="正常上班" checked="">
+                        <input type="radio" name="morning" value="vacation" title="年假">
+                        <input type="radio" name="morning" value="workOvertime" title="加班">
+                        <input type="radio" name="morning" value="rest" title="调休">
+                        <input type="radio" name="morning" value="personalLeave" title="事假">
+                        <input type="radio" name="morning" value="sickLeave" title="病假">
+                        <input type="radio" name="morning" value="absent" title="旷工">
+                        <input type="radio" name="morning" value="funerals" title="婚丧假">
+                        <input type="radio" name="morning" value="antenatalCare" title="产检">
+                        <input type="radio" name="morning" value="paternityLeave" title="陪产假">
+                        <input type="radio" name="morning" value="meternityLeave" title="产假">
+                        <input type="radio" name="morning" value="business" title="出差">
+                    </div>
+                </div>
+                <div class="layui-form-item" pane="">
+                    <label class="layui-form-label">上午</label>
+                    <div class="layui-input-block" id="dayAfternoon">
+                        <input type="radio" name="afternoon" value="normal" title="正常上班" checked="">
+                        <input type="radio" name="afternoon" value="vacation" title="年假">
+                        <input type="radio" name="afternoon" value="workOvertime" title="加班">
+                        <input type="radio" name="afternoon" value="rest" title="调休">
+                        <input type="radio" name="afternoon" value="personalLeave" title="事假">
+                        <input type="radio" name="afternoon" value="sickLeave" title="病假">
+                        <input type="radio" name="afternoon" value="absent" title="旷工">
+                        <input type="radio" name="afternoon" value="funerals" title="婚丧假">
+                        <input type="radio" name="afternoon" value="antenatalCare" title="产检">
+                        <input type="radio" name="afternoon" value="paternityLeave" title="陪产假">
+                        <input type="radio" name="afternoon" value="meternityLeave" title="产假">
+                        <input type="radio" name="afternoon" value="business" title="出差">
+                    </div>
+                </div>
+                <input type="hidden" id="dayId" name="id" />
+                <div class="layui-form-item" style="text-align: center;">
+                    <button class="layui-btn" lay-submit="" lay-filter="editDayBtn">确定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <script src="./layui/layui.js"></script>
+    <script>
+        //一般直接写在一个js文件中
+        layui.use(['layer', 'form', 'table'], function () {
+            var layer = layui.layer
+                , form = layui.form;
+
+            var table = layui.table;
+
+
+            var bgMap = {
+                late: 'yellow',//迟到
+                reissueCard: 'red',//补卡
+                overtime: 'green'//加班
+            }
+
+            var typeMap = {
+                normal: {
+                    tag: '√',
+                    name: '正常上班'
+                },//正常上班
+                vacation: {
+                    tag: '※',
+                    name: '年假'
+                },//年假
+                workOvertime: {
+                    tag: '►',
+                    name: '加班'
+                },//加班
+                rest: {
+                    tag: '★',
+                    name: '调休'
+                },//调休
+                personalLeave: {
+                    tag: '●',
+                    name: '事假'
+                },//事假
+                sickLeave: {
+                    tag: '▲',
+                    name: '病假'
+                },//病假
+                absent: {
+                    tag: '■',
+                    name: '旷工'
+                },//旷工
+                funerals: {
+                    tag: 'θ',
+                    name: '婚丧假'
+                },//婚丧假
+                antenatalCare: {
+                    tag: '〇',
+                    name: '产检'
+                },//产检
+                paternityLeave: {
+                    tag: '☆',
+                    name: '陪产假'
+                },//陪产假 
+                meternityLeave: {
+                    tag: '⊕',
+                    name: '产假'
+                },//产假
+                business: {
+                    tag: '□',
+                    name: "出差"
+                }
+            }
+
+            //修改每天的状态name 与 DOM id
+            var editDayIdMap = {
+                morning: 'dayMorning',
+                afternoon: 'dayAfternoon'
+            }
+
+            //初始化每天状态
+            function initDayType() {
+                var html = '';
+
+                for (name in editDayIdMap) {
+                    for (key in typeMap) {
+                        html += ` <input type="radio" name="${name}" value="${key}" title="${typeMap[key]['tag']}${typeMap[key]['name']}">`
+                    }
+                    $(`#${editDayIdMap[name]}`).html(html);
+                    html = ''
+                }
+                form.render();
+            }
+            initDayType();
+            //控制返回判断上下午对象的key
+            var daysKey = ['0', '1']
+
+            //实例
+            table.render({
+                elem: '#demo'
+                , height: 800
+                // , url: './index.json' //数据接口
+                , page: true //开启分页
+                , cols: [[ //表头
+                    { field: 'id', title: '序号', width: 80, sort: true, rowspan: 2 }
+                    , { field: 'department', title: '部门', width: 80, rowspan: 2 }
+                    , { field: 'name', title: '姓名', width: 80, rowspan: 2 }
+                    , {
+                        title: '日', width: 80, rowspan: 2, templet: function (row) {
+                            return '<div><p>上午</p><p>下午</p></div>'
+                        }
+                    }
+                    , {
+                        field: 'day1', title: '1', width: 50, event: 'day1', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day1')
+                        }
+                    }
+                    , {
+                        field: 'day2', title: '2', width: 50, event: 'day2', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day2')
+                        }
+                    }
+                    , {
+                        field: 'day3', title: '3', width: 50, event: 'day3', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day3')
+                        }
+                    }
+                    , {
+                        field: 'day4', title: '4', width: 50, event: 'day4', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day4')
+                        }
+                    }
+                    , {
+                        field: 'day5', title: '5', width: 50, event: 'day5', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day5')
+                        }
+                    }
+                    , {
+                        field: 'day6', title: '6', width: 50, event: 'day6', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day6')
+                        }
+                    }
+                    , {
+                        field: 'day7', title: '7', width: 50, event: 'day7', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day7')
+                        }
+                    }
+                    , {
+                        field: 'day8', title: '8', width: 50, event: 'day8', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day8')
+                        }
+                    }
+                    , {
+                        field: 'day9', title: '9', width: 50, event: 'day9', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day9')
+                        }
+                    }
+                    , {
+                        field: 'day10', title: '10', width: 50, event: 'day10', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day10')
+                        }
+                    }
+                    , {
+                        field: 'day11', title: '11', width: 50, event: 'day11', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day11')
+                        }
+                    }
+                    , {
+                        field: 'day12', title: '12', width: 50, event: 'day12', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day12')
+                        }
+                    }
+                    , {
+                        field: 'day13', title: '13', width: 50, event: 'day13', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day13')
+                        }
+                    }
+                    , {
+                        field: 'day14', title: '14', width: 50, event: 'day14', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day14')
+                        }
+                    }
+                    , {
+                        field: 'day15', title: '15', width: 50, event: 'day15', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day15')
+                        }
+                    }
+                    , {
+                        field: 'day16', title: '16', width: 50, event: 'day16', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day16')
+                        }
+                    }
+                    , {
+                        field: 'day17', title: '17', width: 50, event: 'day17', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day17')
+                        }
+                    }
+                    , {
+                        field: 'day18', title: '18', width: 50, event: 'day18', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day18')
+                        }
+                    }
+                    , {
+                        field: 'day19', title: '19', width: 50, event: 'day19', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day19')
+                        }
+                    }
+                    , {
+                        field: 'day20', title: '20', width: 50, event: 'day20', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day20')
+                        }
+                    }
+                    , {
+                        field: 'day21', title: '21', width: 50, event: 'day21', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day21')
+                        }
+                    }
+                    , {
+                        field: 'day22', title: '22', width: 50, event: 'day222', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day22')
+                        }
+                    }
+                    , {
+                        field: 'day23', title: '23', width: 50, event: 'day23', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day23')
+                        }
+                    }
+                    , {
+                        field: 'day24', title: '24', width: 50, event: 'day24', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day24')
+                        }
+                    }
+                    , {
+                        field: 'day25', title: '25', width: 50, event: 'day25', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day25')
+                        }
+                    }
+                    , {
+                        field: 'day26', title: '26', width: 50, event: 'day26', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day26')
+                        }
+                    }
+                    , {
+                        field: 'day27', title: '27', width: 50, event: 'day27', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day27')
+                        }
+                    }
+                    , {
+                        field: 'day28', title: '28', width: 50, event: 'day28', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day28')
+                        }
+                    }
+                    , {
+                        field: 'day29', title: '29', width: 50, event: 'day29', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day29')
+                        }
+                    }
+                    , {
+                        field: 'day30', title: '30', width: 50, event: 'day30', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day30')
+                        }
+                    }
+                    , {
+                        field: 'day31', title: '31', width: 50, event: 'day31', align: 'center', templet: function (row) {
+                            return tableDaysFormat(row, 'day31')
+                        }
+                    }
+                    , { field: 'attendance', title: '应出勤数', width: 100 }
+                    , { field: 'realAttendance', title: '实际出勤', edit: 'text', width: 100 }
+                    , { field: 'vacation', title: '18年剩余年假', edit: 'text', width: 100 }
+                    , { field: 'vacationOut', title: '本月已休年假', edit: 'text', width: 100 }
+                    , { field: 'evection', title: '出差', edit: 'text', width: 100 }
+                    , { field: 'onDuty', title: '值班', edit: 'text', width: 100 }
+                    , { field: 'daysOff', title: '调休', edit: 'text', width: 100 }
+                    , { field: 'personalLeave', title: '事假天数', edit: 'text', width: 100 }
+                    , { field: 'sickLeave', title: '病假', edit: 'text', width: 100 }
+                    , { field: 'funerals', title: '婚/丧假', edit: 'text', width: 100 }
+                    , { field: 'antenatalCare', title: '产检', edit: 'text', width: 100 }
+                    , { field: 'paternityLeave', title: '陪产假', edit: 'text', width: 100 }
+                    , { field: 'meternityLeave', title: '产假', edit: 'text', width: 100 }
+                    , { field: 'newTime', title: '本月新增', edit: 'text', width: 100 }
+                    , { field: 'balanceTime', title: '上月结余', edit: 'text', width: 100 }
+                    , { field: 'workOvertimeDiscount', title: '加班抵扣', edit: 'text', width: 100 }
+                    , { field: 'workOvertimeSurplus', title: '加班剩余', edit: 'text', width: 100 }
+                    , {
+                        field: 'sign', title: '员工签字', rowspan: 2, templet: function (row) {
+                            return '<div><p></p><p></p></div>'
+                        }
+                    }
+                ], [
+                    { title: '##', width: 50, align: 'center', colspan: 31 }
+                    , { title: '天数', width: 100, align: 'center', colspan: 13 }
+                    , { title: '小时', width: 100, align: 'center', colspan: 4 }
+
+                ]]
+                , data: [{
+                    id: '1',
+                    department: '测试部门',
+                    departmentId: '1',
+                    name: '测试名称',
+                    position: '职位',
+                    //type 上下午类型   workStatus上班状态   leaveStatus请假状态类型
+                    day1: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: ''
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day2: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'rest'
+                        }
+                    },
+                    day3: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day4: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day5: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day6: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day7: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day8: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day9: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day10: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day11: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day12: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day13: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day14: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day15: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day16: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day17: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day18: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day19: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day20: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day21: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day22: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day23: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day24: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day25: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day26: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day27: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day28: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day29: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day30: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day31: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    attendance: 22,//应出勤
+                    realAttendance: 20,//实际出勤
+                    vacation: 1,//年假
+                    vacationOut: 1,//已休年假
+                    evection: 5,//出差
+                    onDuty: 1,//值班
+                    daysOff: 1,//调休
+                    personalLeave: 0,//事假
+                    sickLeave: 0,//病假
+                    funerals: 1,//婚丧假
+                    antenatalCare: 2,//产检
+                    paternityLeave: 0,//陪产假 
+                    meternityLeave: 1,//产假
+                    newTime: 0,//本月新增时间
+                    balanceTime: 0,//结余时间
+                    workOvertimeDiscount: 0,//加班抵扣 
+                    workOvertimeSurplus: 0,//加班时间剩余
+                }, {
+                    id: '2',
+                    department: '测试部门',
+                    departmentId: '1',
+                    name: '测试名称',
+                    position: '职位',
+                    //type 上下午类型   workStatus上班状态   leaveStatus请假状态类型
+                    day1: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: ''
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day2: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'rest'
+                        }
+                    },
+                    day3: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day4: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day5: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day6: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day7: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day8: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day9: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day10: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day11: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day12: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day13: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day14: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day15: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day16: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day17: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day18: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day19: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day20: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day21: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day22: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day23: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day24: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day25: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day26: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day27: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day28: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day29: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day30: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    day31: {
+                        '0': {
+                            workStatus: 'late', leaveStatus: 'normal'
+                        },
+                        '1': {
+                            workStatus: 'overtime', leaveStatus: 'sickLeave'
+                        }
+                    },
+                    attendance: 22,//应出勤
+                    realAttendance: 20,//实际出勤
+                    vacation: 1,//年假
+                    vacationOut: 1,//已休年假
+                    evection: 5,//出差
+                    onDuty: 1,//值班
+                    daysOff: 1,//调休
+                    personalLeave: 0,//事假
+                    sickLeave: 0,//病假
+                    funerals: 1,//婚丧假
+                    antenatalCare: 2,//产检
+                    paternityLeave: 0,//陪产假 
+                    meternityLeave: 1,//产假
+                    newTime: 0,//本月新增时间
+                    balanceTime: 0,//结余时间
+                    workOvertimeDiscount: 0,//加班抵扣 
+                    workOvertimeSurplus: 0,//加班时间剩余
+                }]
+                , done: function (res, curr, count) {
+                    merge(res)
+                }
+            });
+            //监听单元格点击事件
+            table.on('tool(demo)', function (obj) {
+                var data = obj.data;
+                // console.log(data)
+                // console.log(obj)
+
+                //修改每天考勤信息
+                if (/^day[0-9]/.test(obj.event)) {
+                    var key = obj.event;//修改的数据
+                    var item = data[key];
+                    console.log(item)
+
+                    var morning = item[daysKey[0]];
+                    var afternoon = item[daysKey[1]];
+                    let { leaveStatus: morningLeaveStatus } = morning;
+                    let { leaveStatus: afternoonLeaveStatus } = afternoon;
+
+                    form.val('editDayForm', {
+                        morning: morningLeaveStatus,
+                        afternoon: afternoonLeaveStatus,
+                        id: data.id
+                    })
+                    form.render('radio', 'editDayForm')
+
+                    layer.open({
+                        type: 1,
+                        area: ["800px", "400px"],
+                        content: $('#modalDay') //这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
+                    });
+
+                    //修改每天状态
+                    form.on('submit(editDayBtn)', function (data) {
+                        layer.alert(JSON.stringify(data.field), {
+                            title: '最终的提交信息'
+                        })
+                        obj.update({
+                            day1: {
+                                '0': {
+                                    leaveStatus: 'normal',
+                                    workStatus: 'late'
+                                },
+                                '1': {
+                                    leaveStatus: 'vacation',
+                                    workStatus: 'late'
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+                // if (obj.event === 'setSign') {
+                //     layer.prompt({
+                //         formType: 2
+                //         , title: '修改 ID 为 [' + data.id + '] 的用户签名'
+                //         , value: data.sign
+                //     }, function (value, index) {
+                //         layer.close(index);
+
+                //         //这里一般是发送修改的Ajax请求
+
+                //         //同步更新表格和缓存对应的值
+                //         obj.update({
+                //             sign: value
+                //         });
+                //     });
+                // }
+            })
+
+            //监听单元格编辑
+            table.on('edit(demo)', function (obj) {
+                var value = obj.value //得到修改后的值
+                    , data = obj.data //得到所在行所有键值
+                    , field = obj.field; //得到字段
+                layer.msg('[ID: ' + data.id + '] ' + field + ' 字段更改为：' + value);
+            });
+
+
+            //合并单元格
+            function merge(res) {
+                var data = res.data;
+                var mergeIndex = 0;//定位需要添加合并属性的行数
+                var mark = 1; //这里涉及到简单的运算，mark是计算每次需要合并的格子数
+                var columsName = ['departmentId'];//需要合并的列名称
+                var columsIndex = [1];//需要合并的列索引值
+
+                for (var k = 0; k < columsName.length; k++) { //这里循环所有要合并的列
+                    var trArr = $(".layui-table-body>.layui-table").find("tr");//所有行
+                    for (var i = 1; i < res.data.length; i++) { //这里循环表格当前的数据
+                        var tdCurArr = trArr.eq(i).find("td").eq(columsIndex[k]);//获取当前行的当前列
+                        var tdPreArr = trArr.eq(mergeIndex).find("td").eq(columsIndex[k]);//获取相同列的第一列
+
+                        if (data[i][columsName[k]] === data[i - 1][columsName[k]]) { //后一行的值与前一行的值做比较，相同就需要合并
+                            mark += 1;
+                            tdPreArr.each(function () {//相同列的第一列增加rowspan属性
+                                $(this).attr("rowspan", mark);
+                            });
+                            tdCurArr.each(function () {//当前行隐藏
+                                $(this).css("display", "none");
+                            });
+                        } else {
+                            mergeIndex = i;
+                            mark = 1;//一旦前后两行的值不一样了，那么需要合并的格子数mark就需要重新计算
+                        }
+                    }
+                    mergeIndex = 0;
+                    mark = 1;
+                }
+            }
+            //每天出勤情况格式化
+            function tableDaysFormat(row, key) {
+                let day = row[key];
+                let morning = day[daysKey[0]] //上午
+                let afternoon = day[daysKey[1]] //下午
+                let { workStatus: morningWorkStatus, leaveStatus: morningLeaveStatus } = morning
+                let { workStatus: afternoonWorkStatus, leaveStatus: afternoonLeaveStatus } = afternoon
+                return `<div class="day-item"><p class="day-morning">${typeMap[morningLeaveStatus] && typeMap[morningLeaveStatus]['tag'] || '&nbsp;'}</p><p class="day-afternoon">${typeMap[afternoonLeaveStatus] && typeMap[afternoonLeaveStatus]['tag'] || '&nbsp;'}</p></div>`
+            }
+        });
+    </script>
+</body>
+
+</html>
